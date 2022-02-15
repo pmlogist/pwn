@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Profile Page - {{ .user.Name }}</title>
+</head>
+
+<body>
+  <div class="container">
+    <p style="font-size: 200px;">
+      {{ if eq .user.Sex "F" }}
+      &#128105;&#127997
+      {{ else }}
+      &#128102;&#127997;
+      {{ end }}
+    </p>
+    <h1 style="padding-bottom:10px;">{{ .user.Name }}</h1>
+    <div>
+      <p>Id: <b>{{ .user.Id }}</b></p>
+      <p>Name: <b>{{ .user.Name }}</b></p>
+      <p>Username: <b>{{ .user.Username }}</b></p>
+      <p>Likes: <b>{{ .user.Likes }}</b></p>
+    </div>
+
+  </div>
+
+  <div class="container">
+    <h1 style="padding-bottom:10px;">Users list</h1>
+    <div class="users-list">
+      {{ range .users }}
+      <ul>
+        <li>
+          <p>
+            <b>Id : </b> {{ .Id }}
+          </p>
+          <p>
+            <b>Name: </b> {{ .Name }}
+          </p>
+
+          <p>
+            <b>Likes: </b> {{ .Likes }}
+          </p>
+
+          {{ if .IsAdmin }}
+          <p>
+            <b>is_admin: </b> {{ .IsAdmin }}
+          </p>
+          {{ end }}
+        </li>
+      </ul>
+      <div class="button-group">
+        <form method="POST">
+          <input name="likes" value="{{ .Id }}" hidden>
+          <button class="like-button" type="submit">
+            <span>&#128077;&#127997;</span>
+            <b>Like</b>
+          </button>
+        </form>
+
+        {{ if not .IsAdmin }}
+        <a href="/profile?user_id={{ .Id }}">
+          <button class="go-button" type="submit">
+            <b>
+              Go
+            </b>
+          </button>
+        </a>
+        {{ end }}
+      </div>
+      {{ end }}
+    </div>
+  </div>
+
+
+</body>
+
+</html>
+
+<style>
+  :root,
+  html,
+  body {
+    padding: 0;
+    margin: 0;
+  }
+
+  body {
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    justify-content: center;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+      "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p {
+    padding: 0;
+    margin: 0;
+  }
+
+  ul {
+    list-style-type: none;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 350px;
+    padding: 10px 0 20px 0;
+    margin: 0 20px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    border-radius: 8px;
+  }
+
+  .users-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+
+  .card-button {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .card-title {
+    padding-bottom: 16px;
+  }
+
+  .button-group {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .go-button {
+    padding: 10px 20px;
+    width: max-content;
+    cursor: pointer;
+    color: white;
+    margin-top: 5px;
+    background-color: darkorchid;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    margin: 0 10px;
+  }
+
+  .go-button:hover {
+    background-color: indigo;
+    transition: background-color 200ms ease-in-out;
+  }
+
+  .like-button {
+    padding: 10px 20px;
+    width: max-content;
+    cursor: pointer;
+    margin-top: 5px;
+    background-color: blue;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    margin: 0 10px;
+  }
+
+  .like-button:hover {
+    background-color: darkblue;
+    transition: background-color 200ms ease-in-out;
+  }
+
+  .like-button:disabled {
+    background-color: lightgray;
+    cursor: not-allowed;
+    color: gray;
+    transition: background-color 200ms ease-in-out;
+  }
+
+
+
+  .delete-button {
+    padding: 10px 20px;
+    width: max-content;
+    cursor: pointer;
+    margin-top: 5px;
+    color: white;
+    background-color: darkred;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+  }
+
+  .delete-button:hover {
+    background-color: red;
+    transition: background-color 200ms ease-in-out;
+  }
+
+  .delete-button:disabled {
+    background-color: lightgray;
+    cursor: not-allowed;
+    color: gray;
+    transition: background-color 200ms ease-in-out;
+  }
+</style>
