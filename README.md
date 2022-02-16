@@ -84,6 +84,11 @@ Il est possible de réaliser une injection SQL à partir des divers `<input />` 
 Dans notre application, le package standard `sql` de Go avec le driver `sqlite` ne permet
 pas d'exécuter deux requêtes en simultanés. Cela ne change pas le fait l'injection SQL est possible et que les envois de requêtes SQL malicieuses sont envoyés à la base de données.  
 
+Par exemple:
+```html
+<input value="2';UPDATE users SET is_admin = true WHERE id = '...';" hidden>
+```
+
 ## Migitations
 
 Il faut assainir les inputs comme pour éviter le XSS.
@@ -121,6 +126,8 @@ console.log(
     });
 );
 ```
+
+Par exemple, en utilisant du XSS, un lien malicieux pourrait être envoyé à un administrateur et permettrait de récupérer son cookie x-csrf et de faire une requête en son nom (avec son uid en cookie) 
 
 ## Mitigations
 Un système de cookie est possible dans une application destinée à la production. Cependant il faut faire attention aux informations stockées car les cookies sont envoyés à chaque requête. Afin de sécuriser le cookie, les paramètres doivent être ajouté:
