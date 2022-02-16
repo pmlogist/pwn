@@ -1,6 +1,8 @@
 # pwn
 C'est un petit projet fait en Go bien sympa mais pleins de failles :)
 
+![Screen](docs/screen.png)
+
 # Quickstart
 
 ### Dependencies
