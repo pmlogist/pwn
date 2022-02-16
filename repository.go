@@ -108,7 +108,7 @@ func (r *Router) GetOneById(id string) (User, error) {
 }
 
 func (r *Router) DeleteOneById(id string) {
-	//query := "DELETE FROM users WHERE id =" + id
+	// Unsafe
 	query := fmt.Sprintf("DELETE FROM users WHERE id = '%s'", id)
 	stmt, _ := r.db.Prepare(query)
 	stmt.Exec()

@@ -104,7 +104,6 @@ func (router *Router) Profile(w http.ResponseWriter, r *http.Request, _ httprout
 }
 
 func (router *Router) ProfileLikesAndDelete(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	//t, _ := template.ParseFiles("./templates/profile-deleted.html")
 	likesProfileId := r.FormValue("likes")
 	deleteProfileId := r.FormValue("delete")
 	router.CheckCsrf(w, r)
@@ -117,9 +116,21 @@ func (router *Router) ProfileLikesAndDelete(w http.ResponseWriter, r *http.Reque
 	}
 
 	if deleteProfileId != "" {
-		router.DeleteOneById(deleteProfileId)
-		uid, _ := r.Cookie("uid")
-		http.Redirect(w, r, "/profile"+"?user_id="+uid.Value, http.StatusSeeOther)
+		uid, err := r.Cookie("uid")
+		if err != nil {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+
+		user, err := router.GetOneById(uid.Value)
+		if err != nil {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+
+		if user.IsAdmin {
+			router.DeleteOneById(deleteProfileId)
+			http.Redirect(w, r, "/profile"+"?user_id="+uid.Value, http.StatusSeeOther)
+		}
+		http.Redirect(w, r, "/nice-try", http.StatusSeeOther)
 	}
 
 }
