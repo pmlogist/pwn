@@ -30,6 +30,7 @@ func main() {
 	r.POST("/", router.Login)
 	r.GET("/profile", router.Profile)
 	r.POST("/profile", router.ProfileLikesAndDelete)
+	r.GET("/nice-try", router.NiceTry)
 
 	log.Printf("Server started on: http://localhost:%s", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))

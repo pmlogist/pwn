@@ -5,19 +5,8 @@ import (
 	"log"
 )
 
-type User struct {
-	Id       string
-	Name     string
-	Username string
-	Password string
-	IsAdmin  bool
-	Sex      string
-	Likes    int
-	Token    string
-}
-
 func (r *Router) GetAll() ([]User, error) {
-	rows, err := r.db.Query("SELECT * FROM users")
+	rows, err := r.db.Query("SELECT * FROM users WHERE is_admin = false;")
 	if err != nil {
 		return []User{}, err
 	}
@@ -35,6 +24,7 @@ func (r *Router) GetAll() ([]User, error) {
 			&user.Sex,
 			&user.Likes,
 			&user.IsAdmin,
+			&user.Avatar,
 		)
 
 		if err != nil {
@@ -49,6 +39,7 @@ func (r *Router) GetAll() ([]User, error) {
 			Sex:      user.Sex,
 			Likes:    user.Likes,
 			IsAdmin:  user.IsAdmin,
+			Avatar:   user.Avatar,
 		})
 
 	}
@@ -74,6 +65,7 @@ func (r *Router) GetOneByUsername(username string) (User, error) {
 			&user.Sex,
 			&user.Likes,
 			&user.IsAdmin,
+			&user.Avatar,
 		)
 		if err != nil {
 			log.Fatal(err)
@@ -104,6 +96,7 @@ func (r *Router) GetOneById(id string) (User, error) {
 			&user.Sex,
 			&user.Likes,
 			&user.IsAdmin,
+			&user.Avatar,
 		)
 		if err != nil {
 			log.Fatal(err)
@@ -115,14 +108,14 @@ func (r *Router) GetOneById(id string) (User, error) {
 }
 
 func (r *Router) DeleteOneById(id string) {
-	stmt, _ := r.db.Prepare("UPDATE users SET is_admin = true WHERE id = 2;")
+	//query := "DELETE FROM users WHERE id =" + id
+	query := fmt.Sprintf("DELETE FROM users WHERE id = '%s'", id)
+	stmt, _ := r.db.Prepare(query)
 	stmt.Exec()
 }
 
 func (r *Router) LikeOneById(id string) {
-	query := "UPDATE users SET likes = likes + 1 WHERE id=" + id
-	//query := "UPDATE users SET is_admin=true WHERE id=2; UDATE users SET likes=likes+1 WHERE id=2;"
-	fmt.Println(query)
+	query := fmt.Sprintf("UPDATE users SET likes = likes + 1 WHERE id = %s", id)
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		log.Print(err)

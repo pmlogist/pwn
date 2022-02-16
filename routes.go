@@ -2,31 +2,38 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
-	"math/rand"
+	"log"
 	"net/http"
+	"net/url"
+	"strings"
 	"text/template"
 
 	"github.com/julienschmidt/httprouter"
 )
 
 type Router struct {
-	db *sql.DB
+	db        *sql.DB
+	CsrfToken string
 }
 
 type M map[string]interface{}
 
-var csrf int
+func (router *Router) NiceTry(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	t, _ := template.ParseFiles("./templates/nice-try.html")
 
-func CsrfToken() string {
-	csrf = rand.Intn(100000)
-	return fmt.Sprintf("x-csrf=%v", csrf)
+	router.SetCsrf(w, r)
+	t.Execute(w, nil)
 }
 
 func (router *Router) Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	t, _ := template.ParseFiles("./templates/index.html")
+	home, err := template.ParseFiles("./templates/index.html")
+	if err != nil {
+		log.Print(err)
+	}
 
-	t.Execute(w, nil)
+	router.ClearSession(w, r)
+	router.SetCsrf(w, r)
+	home.Execute(w, nil)
 }
 
 func (router *Router) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -38,73 +45,81 @@ func (router *Router) Login(w http.ResponseWriter, r *http.Request, _ httprouter
 
 	if username == "" || password == "" {
 		t.Execute(w, nil)
+		router.SetCsrf(w, r)
 		return
 	}
 
 	if username != user.Username || password != user.Password {
 		t.Execute(w, nil)
+		router.SetCsrf(w, r)
 	} else {
-		w.Header().Set("Set-Cookie", CsrfToken())
 		w.Header().Set("Set-Cookie", "uid="+user.Id)
+		router.SetCsrf(w, r)
 		http.Redirect(w, r, "/profile"+"?user_id="+user.Id, http.StatusSeeOther)
 	}
 
 }
 
 func (router *Router) Profile(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	//csrfCookie, err := r.Cookie("x-csrf")
 	uid, err := r.Cookie("uid")
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
+		router.SetCsrf(w, r)
+		return
+	}
+	if r.FormValue("logout") != "" {
+		c := &http.Cookie{
+			Name:     "x-csrf",
+			Value:    "",
+			Path:     "/",
+			HttpOnly: true,
+			MaxAge:   0,
+		}
+
+		http.SetCookie(w, c)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		router.SetCsrf(w, r)
 		return
 	}
 
-	//if csrfCookie.Value != fmt.Sprint(csrf) {
-	//	http.Redirect(w, r, "/", http.StatusSeeOther)
-	//	return
-	//}
-
 	// Safe
-	userId := r.URL.Query().Get("user_id")
+	//userId := r.URL.Query().Get("user_id")
 
-	//userId := strings.Split(r.URL.RawQuery, "user_id=")[1]
-	//decodedUserId, _ := url.QueryUnescape(userId)
-	user, _ := router.GetOneById(userId)
-	user.Id = userId
+	users, _ := router.GetAll()
+
+	userId := strings.Split(r.URL.RawQuery, "user_id=")[1]
+	decodedUserId, _ := url.QueryUnescape(userId)
+	user, _ := router.GetOneById(decodedUserId)
+	user.Id = decodedUserId
 
 	if uid.Value != user.Id && user.IsAdmin == true {
 		http.Redirect(w, r, "/profile?user_id="+uid.Value, http.StatusSeeOther)
+		router.SetCsrf(w, r)
 		return
 	}
 
-	users, _ := router.GetAll()
 	t, _ := template.ParseFiles("./templates/profile.html")
+	router.SetCsrf(w, r)
 	t.Execute(w, M{"user": user, "users": users})
 }
 
 func (router *Router) ProfileLikesAndDelete(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	//t, _ := template.ParseFiles("./templates/profile-deleted.html")
-	likes := r.FormValue("likes")
+	likesProfileId := r.FormValue("likes")
+	deleteProfileId := r.FormValue("delete")
+	router.CheckCsrf(w, r)
 
-	if likes != "" {
-		router.LikeOneById(likes)
+	if likesProfileId != "" {
+		router.LikeOneById(likesProfileId)
 		queryUserId := r.URL.Query().Get("user_id")
 		http.Redirect(w, r, "/profile"+"?user_id="+queryUserId, http.StatusSeeOther)
+
 	}
 
-	//csrfCookie, err := r.Cookie("x-csrf")
-	//if err != nil {
-	//	http.Redirect(w, r, "/", http.StatusSeeOther)
-	//	return
-	//}
-
-	//if csrfCookie.Value != fmt.Sprint(csrf) {
-	//	http.Redirect(w, r, "/", http.StatusSeeOther)
-	//	return
-	//}
-
-	//router.DeleteOneById(r.FormValue("id"))
-
-	//t.Execute(w, nil)
+	if deleteProfileId != "" {
+		router.DeleteOneById(deleteProfileId)
+		uid, _ := r.Cookie("uid")
+		http.Redirect(w, r, "/profile"+"?user_id="+uid.Value, http.StatusSeeOther)
+	}
 
 }

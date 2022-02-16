@@ -7,71 +7,93 @@
 </head>
 
 <body>
-  <div class="container">
-    <p style="font-size: 200px;">
-      {{ if eq .user.Sex "F" }}
-      &#128105;&#127997
-      {{ else }}
-      &#128102;&#127997;
-      {{ end }}
-    </p>
-    <h1 style="padding-bottom:10px;">{{ .user.Name }}</h1>
-    <div>
-      <p>Id: <b>{{ .user.Id }}</b></p>
-      <p>Name: <b>{{ .user.Name }}</b></p>
-      <p>Username: <b>{{ .user.Username }}</b></p>
-      <p>Likes: <b>{{ .user.Likes }}</b></p>
+  <nav class="nav">
+    <div class="nav-brand">
+      <b>GoBook</b>
     </div>
 
-  </div>
+    <div class="nav-menu" style="align-items: center;">
+      <form method="GET" action="/">
+        <input name="logout" hidden />
+        <button class="logout-button" type="submit">
+          <b>Logout</b>
+        </button>
+      </form>
+    </div>
+  </nav>
 
-  <div class="container">
-    <h1 style="padding-bottom:10px;">Users list</h1>
-    <div class="users-list">
-      {{ range .users }}
-      <ul>
-        <li>
-          <p>
-            <b>Id : </b> {{ .Id }}
+  <div class="wrapper">
+    <div class="container">
+      <div class="column">
+        <div class="user">
+          <p style="font-size: 200px;">
+            {{ .user.Avatar }}
           </p>
-          <p>
-            <b>Name: </b> {{ .Name }}
-          </p>
+          <h1 style="padding-bottom:10px;">{{ .user.Name }}</h1>
+          <div>
+            <p>Id: {{ .user.Id }}</p>
+            <p>Name: <b>{{ .user.Name }}</b></p>
+            <p>Gender: <b>{{ .user.Sex }}</b></p>
+            <p>Likes: <b>{{ .user.Likes }}</b></p>
 
-          <p>
-            <b>Likes: </b> {{ .Likes }}
-          </p>
-
-          {{ if .IsAdmin }}
-          <p>
-            <b>is_admin: </b> {{ .IsAdmin }}
-          </p>
+            {{ if .user.IsAdmin }}
+            <b style="padding-top: 10px;">ADMINISTRATOR</b>
+            {{ end }}
+          </div>
+          </br>
+          {{ if not .user.IsAdmin }}
+          <form method="POST"">
+            <button class=" logout-button" style="margin-top: 10px;" type="submit">
+            <b>Delete profile</b>
+            </button>
+            <input name="delete" value="{{ .user.Id }}" hidden>
+          </form>
           {{ end }}
-        </li>
-      </ul>
-      <div class="button-group">
-        <form method="POST">
-          <input name="likes" value="{{ .Id }}" hidden>
-          <button class="like-button" type="submit">
-            <span>&#128077;&#127997;</span>
-            <b>Like</b>
-          </button>
-        </form>
+        </div>
 
-        {{ if not .IsAdmin }}
-        <a href="/profile?user_id={{ .Id }}">
-          <button class="go-button" type="submit">
-            <b>
-              Go
-            </b>
-          </button>
-        </a>
+      </div>
+      <div class="column-grid">
+        {{ range .users }}
+        <div class="card">
+          <div class="avatar-small">
+            {{ .Avatar }}
+          </div>
+          <ul>
+            <li>
+              <p>
+                <b>Name: </b> {{ .Name }}
+              </p>
+            </li>
+            <li>
+              <p>
+                <b>Likes: </b> {{ .Likes }}
+              </p>
+            </li>
+          </ul>
+
+          <div class="button-group">
+            <form method="POST">
+              <input name="likes" value="{{ .Id }}" hidden>
+              <button class="like-button" type="submit">
+                <span>&#128077;&#127997;</span>
+                <b>Like</b>
+              </button>
+            </form>
+
+            {{ if not .IsAdmin }}
+            <a href="/profile?user_id={{ .Id }}">
+              <button class="go-button" type="submit">
+                <b>
+                  Go
+                </b>
+              </button>
+            </a>
+            {{ end }}
+          </div>
+        </div>
         {{ end }}
       </div>
-      {{ end }}
     </div>
-  </div>
-
 
 </body>
 
@@ -81,46 +103,61 @@
   :root,
   html,
   body {
-    padding: 0;
-    margin: 0;
-  }
-
-  body {
     background: #fafafa;
-    display: flex;
-    align-items: center;
-    height: 100vh;
-    justify-content: center;
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
       "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
       "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p {
     padding: 0;
     margin: 0;
   }
 
-  ul {
-    list-style-type: none;
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
   }
 
   .container {
     display: flex;
+  }
+
+
+  .column {
+    display: flex;
     flex-direction: column;
+    margin: 0 50px;
+  }
+
+  .column-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .user {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 75%;
+    max-width: 300px;
+  }
+
+  .avatar-small {
+    display: flex;
+    font-size: 28px;
+    justify-content: center;
     align-items: center;
-    width: 350px;
-    padding: 10px 0 20px 0;
-    margin: 0 20px;
-    background-color: #ffffff;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     border-radius: 8px;
+    padding: 10px;
+    margin: 10px;
   }
 
   .users-list {
@@ -138,6 +175,56 @@
 
   .card-title {
     padding-bottom: 16px;
+  }
+
+  .logout-button {
+    padding: 8px 16px;
+    cursor: pointer;
+    color: white;
+    background-color: darkred;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+  }
+
+  .logout-button:hover {
+    background-color: red;
+    transition: background-color 200ms ease-in-out;
+  }
+
+  .nav {
+    position: fixed;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 48px;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  }
+
+  .nav-brand {
+    font-size: 18px;
+  }
+
+  .nav-menu {
+    display: flex;
+  }
+
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p {
+    padding: 0;
+    margin: 0;
+  }
+
+  ul {
+    list-style-type: none;
   }
 
   .button-group {
@@ -183,32 +270,6 @@
   }
 
   .like-button:disabled {
-    background-color: lightgray;
-    cursor: not-allowed;
-    color: gray;
-    transition: background-color 200ms ease-in-out;
-  }
-
-
-
-  .delete-button {
-    padding: 10px 20px;
-    width: max-content;
-    cursor: pointer;
-    margin-top: 5px;
-    color: white;
-    background-color: darkred;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-  }
-
-  .delete-button:hover {
-    background-color: red;
-    transition: background-color 200ms ease-in-out;
-  }
-
-  .delete-button:disabled {
     background-color: lightgray;
     cursor: not-allowed;
     color: gray;
